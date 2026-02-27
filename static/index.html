@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PII::SCANNER // ML-POWERED THREAT DETECTION</title>
+    <meta name="description"
+        content="Real-time PII leakage scanner powered by spaCy NER, BERT Transformers, and Tavily web search.">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Scanline overlay -->
+    <div class="scanline"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">⬡</div>
+            <div>
+                <h1 class="logo-title">PII::SCANNER</h1>
+                <p class="logo-sub">ML-POWERED THREAT DETECTION v3.0</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                ONLINE <span id="headerTime"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+        <button class="tab active" data-tab="dashboard">◉ DASHBOARD</button>
+        <button class="tab" data-tab="scanner">◇ SCANNER</button>
+        <button class="tab" data-tab="results">▦ RESULTS</button>
+    </nav>
+
+    <!-- Dashboard Panel -->
+    <main class="panel active" id="panelDashboard">
+        <h2 class="panel-title">// SYSTEM OVERVIEW</h2>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">TOTAL SCANS</span>
+                <span class="stat-value" id="statScans">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">PII DETECTED</span>
+                <span class="stat-value accent" id="statFindings">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">ACTIVE</span>
+                <span class="stat-value" id="statActive">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">RISK LEVEL</span>
+                <span class="stat-value" id="statRisk">—</span>
+            </div>
+        </div>
+
+        <div class="block">
+            <div class="block-header">RECENT ACTIVITY</div>
+            <div id="activityFeed" class="activity-feed">
+                <div class="empty-state">No scans yet.</div>
+            </div>
+        </div>
+
+        <div class="block">
+            <div class="block-header">SEVERITY DISTRIBUTION</div>
+            <div class="risk-bars">
+                <div class="risk-row"><span class="risk-label crit">CRITICAL</span>
+                    <div class="risk-track">
+                        <div class="risk-fill crit" id="riskCritical"></div>
+                    </div><span class="risk-count" id="riskCritCount">0</span>
+                </div>
+                <div class="risk-row"><span class="risk-label high">HIGH</span>
+                    <div class="risk-track">
+                        <div class="risk-fill high" id="riskHigh"></div>
+                    </div><span class="risk-count" id="riskHighCount">0</span>
+                </div>
+                <div class="risk-row"><span class="risk-label med">MEDIUM</span>
+                    <div class="risk-track">
+                        <div class="risk-fill med" id="riskMedium"></div>
+                    </div><span class="risk-count" id="riskMedCount">0</span>
+                </div>
+                <div class="risk-row"><span class="risk-label low">LOW</span>
+                    <div class="risk-track">
+                        <div class="risk-fill low" id="riskLow"></div>
+                    </div><span class="risk-count" id="riskLowCount">0</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scanner Panel -->
+    <main class="panel" id="panelScanner">
+        <h2 class="panel-title">// THREAT SCANNER</h2>
+
+        <!-- Web Search -->
+        <div class="block">
+            <div class="block-header">⚡ WEB SEARCH SCAN</div>
+            <p class="block-desc">Search the web via Tavily AI and scan each page for PII using spaCy + BERT + Regex.
+            </p>
+            <div class="form-group">
+                <label class="form-label">SEARCH QUERY</label>
+                <input type="text" id="scanQuery" class="form-input"
+                    placeholder='e.g. "leaked aadhaar database exposed"'>
+            </div>
+            <button class="btn btn-primary" onclick="startScan()">EXECUTE SCAN</button>
+        </div>
+
+        <!-- URL Scan -->
+        <div class="block">
+            <div class="block-header">🌐 URL SCAN</div>
+            <div class="form-group">
+                <label class="form-label">TARGET URL</label>
+                <input type="text" id="urlInput" class="form-input" placeholder="https://example.com/page">
+            </div>
+            <button class="btn btn-secondary" id="btnUrlScan" onclick="scanURL()">
+                <span class="btn-icon">🌐</span> SCAN URL
+            </button>
+        </div>
+
+        <!-- Social API Scan -->
+        <div class="block">
+            <div class="block-header">📱 DIRECT SOCIAL API SCAN</div>
+            <p class="block-desc">Scan a specific profile directly via Twitter or Instagram APIs (Official Data).</p>
+            <div class="form-row">
+                <div class="form-group" style="flex:0.4">
+                    <label class="form-label">PLATFORM</label>
+                    <select id="socialPlatform" class="form-input">
+                        <option value="twitter">TWITTER / X</option>
+                        <option value="instagram">INSTAGRAM</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label class="form-label">HANDLE / USERNAME</label>
+                    <input type="text" id="socialHandle" class="form-input" placeholder="@username">
+                </div>
+            </div>
+            <button class="btn btn-accent" id="btnSocialScan" onclick="scanSocial()">
+                <span class="btn-icon">📱</span> SCAN PROFILE
+            </button>
+        </div>
+
+        <!-- Email Discovery -->
+        <div class="block">
+            <div class="block-header">📧 EMAIL IDENTITY DISCOVERY</div>
+            <p class="block-desc">Discover social footprints and potential PII leakage using an email address.</p>
+            <div class="form-group">
+                <label class="form-label">EMAIL ADDRESS</label>
+                <input type="email" id="emailInput" class="form-input" placeholder="user@example.com">
+            </div>
+            <button class="btn btn-primary" id="btnEmailScan" onclick="scanEmail()">
+                <span class="btn-icon">📧</span> DISCOVER IDENTITY
+            </button>
+        </div>
+
+        <!-- Continuous Monitoring -->
+        <div class="block">
+            <div class="block-header">CONTINUOUS PII MONITORING + IN-APP ALERTS</div>
+            <p class="block-desc">Enter the details once. The scanner runs for the selected time window and raises alerts directly inside this app.</p>
+
+            <div class="form-group">
+                <label class="form-label">MONITOR MODE</label>
+                <select id="monMode" class="form-input" onchange="updateMonitorFields()">
+                    <option value="all">ALL USE CASES</option>
+                    <option value="web">WEB SEARCH</option>
+                    <option value="url">URL</option>
+                    <option value="social">SOCIAL</option>
+                    <option value="email">EMAIL</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">WEB QUERY</label>
+                <input type="text" id="monQuery" class="form-input" placeholder="query for web monitoring">
+            </div>
+            <div class="form-group">
+                <label class="form-label">URL TARGET</label>
+                <input type="text" id="monUrl" class="form-input" placeholder="https://example.com/page">
+            </div>
+            <div class="form-row">
+                <div class="form-group" style="flex:0.4">
+                    <label class="form-label">SOCIAL PLATFORM</label>
+                    <select id="monPlatform" class="form-input">
+                        <option value="">Select platform</option>
+                        <option value="twitter">TWITTER / X</option>
+                        <option value="instagram">INSTAGRAM</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label class="form-label">SOCIAL HANDLE</label>
+                    <input type="text" id="monHandle" class="form-input" placeholder="@username">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">EMAIL TARGET</label>
+                <input type="email" id="monEmail" class="form-input" placeholder="user@example.com">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex:1">
+                    <label class="form-label">DURATION (MINUTES)</label>
+                    <input type="number" id="monDuration" class="form-input" min="1" value="60">
+                </div>
+            </div>
+
+            <p class="block-desc">Alerts appear in monitor logs and status inside the app.</p>
+
+            <div class="form-row">
+                <button class="btn btn-primary" id="btnStartMonitor" onclick="startMonitoring()">START MONITORING</button>
+                <button class="btn btn-secondary" id="btnStopMonitor" onclick="stopMonitoring()">STOP MONITORING</button>
+            </div>
+            <div id="monitorStatus" class="model-info">No active monitor.</div>
+        </div>
+
+        <!-- File Upload -->
+        <div class="block">
+            <div class="block-header">📁 FILE UPLOAD</div>
+            <div class="drop-zone" id="dropZone">
+                <span class="drop-icon">⬆</span>
+                <span>Drop file here or click to upload</span>
+                <small>.txt, .csv, .json, .log, .env</small>
+                <input type="file" id="fileInput" hidden accept=".txt,.csv,.json,.log,.env,.xml,.yaml,.yml">
+            </div>
+        </div>
+
+        <!-- Progress Popup -->
+        <div class="progress-overlay hidden" id="progressOverlay">
+            <div class="progress-modal">
+                <div class="progress-modal-header">
+                    <div class="progress-modal-title">
+                        <span class="progress-spinner"></span>
+                        <span id="progressTitle">SCAN IN PROGRESS</span>
+                    </div>
+                    <button class="progress-close-btn" onclick="hideProgress()">CLOSE</button>
+                </div>
+                <div class="block" id="scanProgress">
+                    <div class="block-header">SCAN PROGRESS</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-pct" id="progressPct">0%</div>
+                    <div class="progress-log" id="progressLog"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Results Panel -->
+    <main class="panel" id="panelResults">
+        <h2 class="panel-title">// SCAN RESULTS</h2>
+
+        <div class="results-summary hidden" id="resultsSummary">
+            <div class="summary-stat">
+                <span class="summary-label">FINDINGS</span>
+                <span class="summary-value" id="resTotalFindings">0</span>
+            </div>
+            <div class="summary-stat">
+                <span class="summary-label">SOURCES</span>
+                <span class="summary-value" id="resTotalSources">0</span>
+            </div>
+            <div class="summary-stat">
+                <span class="summary-label">RISK</span>
+                <span class="summary-value risk-badge" id="resOverallRisk">—</span>
+            </div>
+            <div class="summary-stat">
+                <span class="summary-label">METHODS</span>
+                <span class="summary-value" id="resMethods">—</span>
+            </div>
+        </div>
+
+        <div id="resultsList" class="results-list">
+            <div class="empty-state">Run a scan to see results.</div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <span>PII LEAKAGE SCANNER // v3.0 ML-POWERED</span>
+        <span>SYSTEM STATUS: <strong class="accent">OPERATIONAL</strong></span>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
+
+
+
+
