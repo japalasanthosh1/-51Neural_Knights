@@ -3,6 +3,3 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-clerk-javascript/node_modules/
-clerk-javascript/.env

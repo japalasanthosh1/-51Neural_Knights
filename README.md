@@ -1,6 +1,6 @@
 # -51Neural_Knights
 
-FastAPI-based PII leakage scanner with a custom static frontend and an additional `clerk-javascript` project folder.
+FastAPI-based PII leakage scanner with a custom static frontend.
 
 ## Project Structure
 
@@ -17,25 +17,6 @@ FastAPI-based PII leakage scanner with a custom static frontend and an additiona
 |   |-- index.html
 |   |-- style.css
 |   `-- app.js
-|-- clerk-javascript/
-|   |-- .env
-|   |-- .gitignore
-|   |-- index.html
-|   |-- package.json
-|   |-- package-lock.json
-|   |-- tsconfig.json
-|   |-- src/
-|   |   |-- main.js
-|   |   `-- style.css
-|   |-- public/
-|   |   `-- vite.svg
-|   |-- dist/
-|   |   |-- index.html
-|   |   |-- vite.svg
-|   |   `-- assets/
-|   |       |-- index-Cq48blt_.css
-|   |       `-- index-CW9MT27T.js
-|   `-- node_modules/            (installed JS dependencies)
 |-- .venv/                       (Python virtual environment)
 `-- __pycache__/                 (Python bytecode cache)
 ```
@@ -48,7 +29,6 @@ FastAPI-based PII leakage scanner with a custom static frontend and an additiona
 - `social_api_scanner.py`: Social profile scanning integrations.
 - `email_discovery_scanner.py`: Email-based footprint and leakage discovery.
 - `static/*`: Frontend UI (HTML, CSS, JavaScript) used by the FastAPI app.
-- `clerk-javascript/*`: Separate JavaScript project (build + source artifacts).
 
 ## Run (Python app)
 
