@@ -1,4 +1,4 @@
-# PII Leakage Scanner
+# -51Neural_Knights
 
 FastAPI-based PII leakage scanner with a custom static frontend and an additional `clerk-javascript` project folder.
 
